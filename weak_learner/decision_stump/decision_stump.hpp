@@ -22,14 +22,15 @@ class DecisionStump
   arma::Mat<size_t> spL;
   arma::Row<size_t> classLabels;
   arma::rowvec splittingCol;
-  arma::rowvec splitPoints;
+  arma::mat split;
   int splitCol; // splitting attribute
   int oneClass; // is 0 if multiple classes exist, else 1 if only one class
   size_t bucketSize;
   template <typename rType> int isDistinct(const arma::Row<rType>& featureRow);
   double SetupSplitAttribute(const arma::rowvec& attribute);
-  double CalculateEntropy(const arma::rowvec& attribute);
+  double CalculateEntropy(const arma::rowvec& attribute, const arma::rowvec& labels);
   void TrainOnAtt(const arma::rowvec& attribute);
+  int CountMostFreq(const arma::rowvec& subCols);
  public:
   DecisionStump(const MatType& data,
                 const arma::Row<size_t>& labels,

@@ -34,13 +34,13 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
   else
   {
     oneClass = 0;
-    int bestAtt=-1;
+    int bestAtt=-1,i,j;
     double entropy,bestEntropy=DBL_MAX; 
     // setting default values of splitting attribute
     
     std::cout<<"Okay. Entered oneClass as "<<oneClass<<"\n";
 
-    for (int i = 0;i < data.n_rows;i++)
+    for (i = 0;i < data.n_rows;i++)
     {
       if (isDistinct<double>(data.row(i)))
       {
@@ -60,36 +60,13 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
       }
     }
 
-    std::cout<<"Entropy calculation done !\n";
+    std::cout<<"Entropy calculation done with value of bestEntropy : "
+             <<bestEntropy<<" and the bestAtt as: "<<bestAtt<<"\n";
+  
+    splitCol = bestAtt;
 
-    if ( bestAtt != -1 )
-    {
-      int i,j;  
-      splitCol = bestAtt;
+    TrainOnAtt(data.row(splitCol));
 
-      arma::rowvec uniqueAtt = arma::unique(data.row(splitCol));
-      arma::Mat<size_t> splitLabels(uniqueAtt.n_elem,numClass,arma::fill::zeros); 
-      
-      for (j = 0; j < uniqueAtt.size(); j++)
-      {
-        for (i = 0; i < data.n_cols; i++)
-        {
-          if (uniqueAtt(j) == data(splitCol,i))
-          {
-            splitLabels(j,labels(i))++;
-          }
-        }
-      }
-      spL = splitLabels + arma::zeros<arma::Mat<size_t> >(uniqueAtt.n_elem,numClass);
-      splittingCol = data.row(splitCol) + arma::zeros<arma::rowvec >(data.n_cols);
-      // get this to some local/class variable, which can be used by 
-      // classify later on.
-    }
-      
-    else
-    {
-      // no attributes to split on
-    }
   }
 
 }
@@ -102,12 +79,16 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
   int i, count, begin, end;
   double entropy = 0.0;
 
+  arma::rowvec sortedAtt = arma::sort(attribute);
+  sortedAtt.print("Value of the sorted Att: ");
+
   arma::uvec sortedIndexAtt = arma::stable_sort_index(attribute.t());
   sortedIndexAtt.print("Value of sorted Index Att: ");
 
   // ^ index of sorted elements.
   arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
   
+  classLabels.print("Unsorted class labels: ");
   std::cout<<"Now going to sort into classes \n";
 
   for (i = 0; i < attribute.n_elem; i++)
@@ -116,7 +97,10 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
   sortedLabels.print("Value of sorted Labels is: ");
 
   // sortedLabels now has the labels, sorted as per the attribute.
+
   arma::rowvec subCols;
+  arma::rowvec subColAtts;
+
   // now start creating buckets:
   i = 0;
   count = 0;
@@ -143,7 +127,10 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
 
       subCols.print("These are the subCols on which entropy is being calculated.");
 
-      entropy += CalculateEntropy(subCols);
+      subColAtts = sortedAtt.cols(begin, end) + 
+              arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
+
+      entropy += CalculateEntropy(subColAtts, subCols);
       //sortedLabels.cols(begin, end));
       // has to be a better way around this - if not this then it throws
       // a problem with the sub_matrix view.
@@ -164,15 +151,23 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
 template <typename MatType>
 void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
 {
-  arma::rowvec splitPoints;
+  std::cout<<"Okay. Now entering TrainOnAttribute \n";
+
   int i, count, begin, end;
 
-  arma::uvec sortedIndexAtt = arma::stable_sort_index(attribute.t());
-
+  arma::rowvec sortedSplitAtt = arma::sort(attribute);
+  arma::uvec sortedSplitIndexAtt = arma::stable_sort_index(attribute.t());
   arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
+  arma::mat tempSplit;
 
+  for (i = 0; i < attribute.n_elem; i++)
+    sortedLabels(i) = classLabels(sortedSplitIndexAtt(i));
+  
+  std::cout<<"Now going to learn.\n";
+  sortedLabels.print("Value of sorted Labels is: ");
+  
   arma::rowvec subCols;
-
+  int mostFreq;
   i = 0;
   count = 0;
   while (i < sortedLabels.n_elem - 1)
@@ -193,14 +188,54 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
         begin = i - count + 1;
         end = i;
       }
+      subCols = sortedLabels.cols(begin, end) + 
+              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+      subCols.print("subCols are: ");
+      
+      mostFreq = CountMostFreq(subCols);
+      
+      std::cout<<"Most Frequent value is: "<<mostFreq<<"\n";
+
+      tempSplit << begin << mostFreq << arma::endr;
+      split = arma::join_cols(split, tempSplit);
       i = end + 1;
       count = 0;
     }
     else
       i++;
   }
+  split.print("value of final split");
+}
+template <typename MatType>
+int DecisionStump<MatType>::CountMostFreq(const arma::rowvec& subCols)
+{
+  arma::rowvec sortCounts = arma::sort(subCols);
+  sortCounts.print("Value of sortCounts: ");
 
+  int count = 0, localCount = 0,i;
 
+  for (i = 0; i < sortCounts.n_elem ; ++i)
+  {
+    if (i == sortCounts.n_elem - 1)
+    {
+      if (sortCounts(i-1)=sortCounts(i))
+        localCount++;
+      if (localCount > count)
+        count = localCount;
+    }
+    else if (sortCounts(i) != sortCounts(i+1))
+    {
+      localCount = 0;
+      count++;
+    }
+    else
+    {
+      localCount++;
+      if (localCount > count)
+        count = localCount;
+    }
+  }
+  return count;
 }
 
 template <typename MatType>
@@ -214,7 +249,8 @@ int DecisionStump<MatType>::isDistinct(const arma::Row<rType>& featureRow)
 }
 
 template<typename MatType>
-double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute)
+double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute,
+                                                const arma::rowvec& labels)
 {
   int i,j,count;
   double entropy=0.0;
@@ -222,10 +258,12 @@ double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute)
   std::cout<<"Entering CalculateEntropy.\n";
 
   arma::rowvec uniqueAtt = arma::unique(attribute);
+  arma::rowvec uniqueLabel = arma::unique(labels);
   arma::Row<size_t> numElem(uniqueAtt.n_elem,arma::fill::zeros); 
   arma::Mat<size_t> entropyArray(uniqueAtt.n_elem,numClass,arma::fill::zeros); 
   
   uniqueAtt.print("Value of uniqueAtt is: ");
+  uniqueLabel.print("Value of uniqueLabel is: ");
 
   for (j = 0;j < uniqueAtt.n_elem; j++)
   {
@@ -233,7 +271,7 @@ double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute)
     {
       if (uniqueAtt[j] == attribute[i])
       {
-        entropyArray(j,attribute(i))++;
+        entropyArray(j,labels(i))++;
         numElem(j)++;
       }
     }

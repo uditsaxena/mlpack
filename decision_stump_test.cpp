@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(EntropyCalculation)
   const char* testSet = "ds_testSet3.csv";
   size_t numClasses = 2;
   const char* output = "ds_output3.csv";
-  size_t inpBucketSize = 1;
+  size_t inpBucketSize = 3;
 
   mat trainingData;
   data::Load(trainSet, trainingData, true);
