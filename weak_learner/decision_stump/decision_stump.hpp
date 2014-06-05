@@ -23,6 +23,7 @@ class DecisionStump
   arma::Row<size_t> classLabels;
   arma::rowvec splittingCol;
   arma::mat split;
+  size_t defaultClass;
   int splitCol; // splitting attribute
   int oneClass; // is 0 if multiple classes exist, else 1 if only one class
   size_t bucketSize;
@@ -30,7 +31,7 @@ class DecisionStump
   double SetupSplitAttribute(const arma::rowvec& attribute);
   double CalculateEntropy(const arma::rowvec& attribute, const arma::rowvec& labels);
   void TrainOnAtt(const arma::rowvec& attribute);
-  int CountMostFreq(const arma::rowvec& subCols);
+  template <typename rType> size_t CountMostFreq(const arma::Row<rType>& subCols);
  public:
   DecisionStump(const MatType& data,
                 const arma::Row<size_t>& labels,

@@ -68,12 +68,12 @@ BOOST_AUTO_TEST_CASE(EntropyCalculation)
   data::Load(testSet, testingData, true);
   
   DecisionStump<> ds(trainingData, labelsIn.row(0), numClasses, inpBucketSize);
-  /*
+  
   Row<size_t> predictedLabels(testingData.n_cols);
   ds.Classify(testingData, predictedLabels);
   
   data::Save(output, predictedLabels, true, true);
-  */
+  
   
 }
 

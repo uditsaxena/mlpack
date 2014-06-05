@@ -28,7 +28,8 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
   // Constructor
   if ( !isDistinct<size_t>(labels) )
   {
-    oneClass = 1; 
+    oneClass = 1;
+    defaultClass = classLabels(0); 
     // put some indicator of some kind here.
   }
   else
@@ -38,18 +39,20 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
     double entropy,bestEntropy=DBL_MAX; 
     // setting default values of splitting attribute
     
-    std::cout<<"Okay. Entered oneClass as "<<oneClass<<"\n";
+    defaultClass = CountMostFreq<size_t>(classLabels);
+
+    // std::cout<<"Okay. Entered oneClass as "<<oneClass<<"\n";
 
     for (i = 0;i < data.n_rows;i++)
     {
       if (isDistinct<double>(data.row(i)))
       {
-        std::cout<<"Entering SetupSplitAttribute with i as :"<<i<<" and the data row as:\n";
-        data.row(i).print();
+        // std::cout<<"Entering SetupSplitAttribute with i as :"<<i<<" and the data row as:\n";
+        // data.row(i).print();
 
         entropy=SetupSplitAttribute(data.row(i));
 
-        std::cout<<"Value of entropy "<<entropy<<"\n";
+        // std::cout<<"Value of entropy "<<entropy<<"\n";
     
         if( entropy < bestEntropy )
         {
@@ -60,8 +63,8 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
       }
     }
 
-    std::cout<<"Entropy calculation done with value of bestEntropy : "
-             <<bestEntropy<<" and the bestAtt as: "<<bestAtt<<"\n";
+    // std::cout<<"Entropy calculation done with value of bestEntropy : "
+             // <<bestEntropy<<" and the bestAtt as: "<<bestAtt<<"\n";
   
     splitCol = bestAtt;
 
@@ -74,27 +77,27 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
 template <typename MatType>
 double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute)
 {
-  std::cout<<"Okay. Now entering SetupSplitAttribute \n";
+  // std::cout<<"Okay. Now entering SetupSplitAttribute \n";
 
   int i, count, begin, end;
   double entropy = 0.0;
 
   arma::rowvec sortedAtt = arma::sort(attribute);
-  sortedAtt.print("Value of the sorted Att: ");
+  // sortedAtt.print("Value of the sorted Att: ");
 
   arma::uvec sortedIndexAtt = arma::stable_sort_index(attribute.t());
-  sortedIndexAtt.print("Value of sorted Index Att: ");
+  // sortedIndexAtt.print("Value of sorted Index Att: ");
 
   // ^ index of sorted elements.
   arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
   
-  classLabels.print("Unsorted class labels: ");
-  std::cout<<"Now going to sort into classes \n";
+  // classLabels.print("Unsorted class labels: ");
+  // std::cout<<"Now going to sort into classes \n";
 
   for (i = 0; i < attribute.n_elem; i++)
     sortedLabels(i) = classLabels(sortedIndexAtt(i));
   
-  sortedLabels.print("Value of sorted Labels is: ");
+  // sortedLabels.print("Value of sorted Labels is: ");
 
   // sortedLabels now has the labels, sorted as per the attribute.
 
@@ -125,7 +128,7 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
       subCols = sortedLabels.cols(begin, end) + 
               arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
 
-      subCols.print("These are the subCols on which entropy is being calculated.");
+      // subCols.print("These are the subCols on which entropy is being calculated.");
 
       subColAtts = sortedAtt.cols(begin, end) + 
               arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
@@ -151,7 +154,7 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
 template <typename MatType>
 void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
 {
-  std::cout<<"Okay. Now entering TrainOnAttribute \n";
+  // std::cout<<"Okay. Now entering TrainOnAttribute \n";
 
   int i, count, begin, end;
 
@@ -163,8 +166,8 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
   for (i = 0; i < attribute.n_elem; i++)
     sortedLabels(i) = classLabels(sortedSplitIndexAtt(i));
   
-  std::cout<<"Now going to learn.\n";
-  sortedLabels.print("Value of sorted Labels is: ");
+  // std::cout<<"Now going to learn.\n";
+  // sortedLabels.print("Value of sorted Labels is: ");
   
   arma::rowvec subCols;
   int mostFreq;
@@ -190,11 +193,11 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
       }
       subCols = sortedLabels.cols(begin, end) + 
               arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
-      subCols.print("subCols are: ");
+      // subCols.print("subCols are: ");
       
-      mostFreq = CountMostFreq(subCols);
+      mostFreq = CountMostFreq<double>(subCols);
       
-      std::cout<<"Most Frequent value is: "<<mostFreq<<"\n";
+      // std::cout<<"Most Frequent value is: "<<mostFreq<<"\n";
 
       tempSplit << begin << mostFreq << arma::endr;
       split = arma::join_cols(split, tempSplit);
@@ -205,12 +208,23 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
       i++;
   }
   split.print("value of final split");
+  // another function to quietly process and merge ranges.
+  // MergeRanges();
+  // 
 }
+
+// template <typename MatType>
+// void DecisionStump<MatType>::MergeRanges()
+// {
+
+// }
+
 template <typename MatType>
-int DecisionStump<MatType>::CountMostFreq(const arma::rowvec& subCols)
+template <typename rType>
+size_t DecisionStump<MatType>::CountMostFreq(const arma::Row<rType>& subCols)
 {
-  arma::rowvec sortCounts = arma::sort(subCols);
-  sortCounts.print("Value of sortCounts: ");
+  arma::Row<rType> sortCounts = arma::sort(subCols);
+  // sortCounts.print("Value of sortCounts: ");
 
   int count = 0, localCount = 0,i;
 
@@ -218,7 +232,7 @@ int DecisionStump<MatType>::CountMostFreq(const arma::rowvec& subCols)
   {
     if (i == sortCounts.n_elem - 1)
     {
-      if (sortCounts(i-1)=sortCounts(i))
+      if (sortCounts(i-1) == sortCounts(i))
         localCount++;
       if (localCount > count)
         count = localCount;
@@ -255,15 +269,15 @@ double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute,
   int i,j,count;
   double entropy=0.0;
   
-  std::cout<<"Entering CalculateEntropy.\n";
+  // std::cout<<"Entering CalculateEntropy.\n";
 
   arma::rowvec uniqueAtt = arma::unique(attribute);
   arma::rowvec uniqueLabel = arma::unique(labels);
   arma::Row<size_t> numElem(uniqueAtt.n_elem,arma::fill::zeros); 
   arma::Mat<size_t> entropyArray(uniqueAtt.n_elem,numClass,arma::fill::zeros); 
   
-  uniqueAtt.print("Value of uniqueAtt is: ");
-  uniqueLabel.print("Value of uniqueLabel is: ");
+  // uniqueAtt.print("Value of uniqueAtt is: ");
+  // uniqueLabel.print("Value of uniqueLabel is: ");
 
   for (j = 0;j < uniqueAtt.n_elem; j++)
   {
@@ -277,7 +291,7 @@ double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute,
     }
   }
 
-  entropyArray.print("Again, value of entropyArray is: ");
+  // entropyArray.print("Again, value of entropyArray is: ");
 
   double p1, p2, p3;
   for ( j = 0; j < uniqueAtt.size(); j++ )
@@ -297,7 +311,7 @@ double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute,
     }
   }
   
-  std::cout<<"Value of Entropy inside CalculateEntropy() is: "<<entropy<<"\n";
+  // std::cout<<"Value of Entropy inside CalculateEntropy() is: "<<entropy<<"\n";
 
   return entropy;
 }
@@ -306,38 +320,31 @@ template<typename MatType>
 void DecisionStump<MatType>::Classify(const MatType& test,
                                       arma::Row<size_t>& predictedLabels)
 {
-  int i,j;
+  int i,j,val;
   if ( !oneClass )
   {
-    double max;
-    arma::rowvec uniqueAtt = arma::unique(splittingCol);//trainData.row(splitCol));
-      
-    // now predict using majority voting
-    arma::Row<size_t> splitClass(uniqueAtt.size());
-    arma::Row<size_t> count; // helper row, to help find the max value;
-
-    // for ( j = 0; j < uniqueAtt.size(); j++)
-    // {
-    //   // has to be a better way to get around this...
-    //   count = spL.row(j);
-    //   max = count.max(splitClass(j));
-    //   // finding index of the class and then predicting that class.
-    // }
-
-    for ( i = 0; i < test.n_cols; i++)
+    for (i = 0; i < test.n_cols; ++i)
     {
-      for ( j = 0; j < uniqueAtt.size(); j++ )
+      val = test(splitCol,i);
+      for ( j = 0; j < split.n_rows; j++)
       {
-        if ( test(splitCol,i)==uniqueAtt[j] )
-          predictedLabels(i)=splitClass[j];
+        if (j == split.n_rows - 1)
+          predictedLabels(i) = split(j,1);
+
+        else if ( (val >= split(j,0)) && (val < split(j + 1,0)) )
+          predictedLabels(i) = split(j,1);
+
+        // else put default class (majority class)
+        else
+          predictedLabels(i) = defaultClass; 
+
       }
     }
   }
-
   else
   {
     for (i = 0;i < test.n_cols;i++)
-      predictedLabels(i)=classLabels(0);
+      predictedLabels(i)=defaultClass;
   }
 
 }
