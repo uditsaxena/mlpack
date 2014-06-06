@@ -32,6 +32,7 @@ class DecisionStump
   double CalculateEntropy(const arma::rowvec& attribute, const arma::rowvec& labels);
   void TrainOnAtt(const arma::rowvec& attribute);
   template <typename rType> size_t CountMostFreq(const arma::Row<rType>& subCols);
+  void MergeRanges();
  public:
   DecisionStump(const MatType& data,
                 const arma::Row<size_t>& labels,

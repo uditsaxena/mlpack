@@ -209,15 +209,29 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
   }
   split.print("value of final split");
   // another function to quietly process and merge ranges.
-  // MergeRanges();
+  MergeRanges();
   // 
 }
 
-// template <typename MatType>
-// void DecisionStump<MatType>::MergeRanges()
-// {
+template <typename MatType>
+void DecisionStump<MatType>::MergeRanges()
+{
+  // split.print("This is the initial value of split, on entering MergeRanges(). ");
+  int i;
+  for (i = 1;i < split.n_rows; i++)
+  {
+    if (split(i,1) == split(i-1,1))
+    {
+      // remove this row, 
+      // carry on to the next one ?
+      // how, exactly ?
+      split.shed_row(i);
+      i--; // go back to previous row.
+    }
+  }
+  // split.print("This is the final value of split, when leaving MergeRanges(). ");
 
-// }
+}
 
 template <typename MatType>
 template <typename rType>
