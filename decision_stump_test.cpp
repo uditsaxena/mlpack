@@ -102,6 +102,7 @@ BOOST_AUTO_TEST_CASE(PerfectSplitOnZero)
   data::Save(output, predictedLabels, true, true);
 }
 
+
 BOOST_AUTO_TEST_CASE(BinningTesting)
 {
   const char* trainSet = "ds_trainSet5.csv";
@@ -137,7 +138,7 @@ BOOST_AUTO_TEST_CASE(PerfectMultiClassSplit)
   const char* testSet = "ds_testSet6.csv";
   size_t numClasses = 4;
   const char* output = "ds_output6.csv";
-  size_t inpBucketSize = 4;
+  size_t inpBucketSize = 3;
 
   mat trainingData;
   data::Load(trainSet, trainingData, true);

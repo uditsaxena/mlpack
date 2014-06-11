@@ -84,7 +84,7 @@ class DecisionStump
   @param: attribute - attribute is the attribute decided by the constructor
                       on which we now train the decision stump.
    */
-  void TrainOnAtt(const arma::rowvec& attribute);
+  template <typename rType> void TrainOnAtt(const arma::rowvec& attribute);
 
   /* After the "split" matrix has been set up, 
      merging ranges with identical class labels.
@@ -97,7 +97,7 @@ class DecisionStump
   @param: subCols - the vector in which to find the most frequently 
                     occurring element.  
    */
-  template <typename rType> size_t CountMostFreq(const arma::Row<rType>& subCols);
+  template <typename rType> rType CountMostFreq(const arma::Row<rType>& subCols);
  
   /* 
   Returns 1 if all the values of featureRow are not same.

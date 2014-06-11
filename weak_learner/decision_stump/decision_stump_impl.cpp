@@ -55,6 +55,8 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
     // not present in the training data. 
     defaultClass = CountMostFreq<size_t>(classLabels);
 
+    // std::cout<<"Default Class is: "<<defaultClass<<"\n";
+
     for (i = 0;i < data.n_rows; i++)
     {
       // going through each attribute of data.
@@ -73,13 +75,16 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
           bestEntropy = entropy;
         } 
 
+        // std::cout<<"bestAtt is: "<<bestAtt<<"\n";
+
       }
     }
     splitCol = bestAtt;
 
     // once the splitting column/attribute has been decided, 
     // train on it.
-    TrainOnAtt(data.row(splitCol));
+    // std::cout<<"bestAtt is: "<<splitCol<<"\n";
+    TrainOnAtt<double>(data.row(splitCol));
   }
 }
 
@@ -95,24 +100,45 @@ template<typename MatType>
 void DecisionStump<MatType>::Classify(const MatType& test,
                                       arma::Row<size_t>& predictedLabels)
 {
-  int i,j,val;
+  // std::cout<<"Now entering classify: \n";
+  int i,j,flag;
+  double val,testval;
   if ( !oneClass )
   {
-    for (i = 0; i < test.n_cols; ++i)
+    for (i = 0; i < test.n_cols; i++)
     {
       val = test(splitCol,i);
-      for ( j = 0; j < split.n_rows; j++)
+
+      // std::cout<<"Value of val: "<<val<<"\n";
+
+      j = 0;
+      flag = 0;
+
+      // split.print("Value of split: ");
+      while ((j < split.n_rows) && (!flag))
       {
-        if (j == split.n_rows - 1)
-          predictedLabels(i) = split(j,1);
-
-        else if ( (val >= split(j,0)) && (val < split(j + 1,0)) )
-          predictedLabels(i) = split(j,1);
-
-        // else put default class (majority class)
-        else
-          predictedLabels(i) = defaultClass; 
-
+        if(val < split(j,0) && (!j))
+        {
+          // std::cout<<"In the first split interval\n";
+          predictedLabels(i) = split(0,1);
+          flag = 1;
+        }
+        else if (val >= split(j,0))
+        {
+          if(j == split.n_rows - 1)
+          {
+            // std::cout<<"Positive infinity\n";
+            predictedLabels(i) = split(split.n_rows - 1, 1);
+            flag = 1;
+          }
+          else if (val < split(j+1,0))
+          {
+            // std::cout<<"In any interval\n";
+            predictedLabels(i) = split(j,1);
+            flag = 1;
+          }
+        }
+        j++;
       }
     }
   }
@@ -140,10 +166,14 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
   // sorting the attribute, for calculating splitting ranges
   arma::rowvec sortedAtt = arma::sort(attribute);
 
+  // sortedAtt.print("sortedAtt is: ");
+
   // storing the indexes of the sorted attribute to build 
   // a vector of sorted labels.
   // this sort is stable.
   arma::uvec sortedIndexAtt = arma::stable_sort_index(attribute.t());
+
+  // sortedIndexAtt.print("sortedInd/exAtt is: ");
 
   // vector of sorted labels
   arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
@@ -151,6 +181,8 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
   for (i = 0; i < attribute.n_elem; i++)
     sortedLabels(i) = classLabels(sortedIndexAtt(i));
   
+  // sortedLabels.print("sortedLabels is: ");
+
   arma::rowvec subColLabels;
   arma::rowvec subColAtts;
 
@@ -158,10 +190,31 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
   count = 0;
 
   // this splits the sorted into buckets of size >= inpBucketSize
-  while (i < sortedLabels.n_elem - 1)
+  while (i < sortedLabels.n_elem)
   {
     count++;
-    if( sortedLabels(i) != sortedLabels(i + 1) )
+    // std::cout<<"Value of count: "<<count<<"\n";
+    if (i == sortedLabels.n_elem - 1)
+    {
+      begin = i - count + 1;
+      end = i;
+
+      // std::cout<<"Must be an error after here. \n";
+      // std::cout<<"value of begin: "<<begin<<" and value of end: "<<end<<"\n";
+      subColLabels = sortedLabels.cols(begin, end) + 
+              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+
+      // subColLabels.print("subColLabels is: ");
+
+      // std::cout<<"Or is it after subColLabels ? \n";
+      subColAtts = sortedAtt.cols(begin, end) + 
+              arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
+
+      // subColAtts.print("subColAtts is: ");
+      entropy += CalculateEntropy(subColAtts, subColLabels);
+      i++;
+    }
+    else if( sortedLabels(i) != sortedLabels(i + 1) )
     {
       if (count < bucketSize) 
       {
@@ -176,20 +229,32 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
         begin = i - count + 1;
         end = i;
       }
+
+      // std::cout<<"value of begin: "<<begin<<" and value of end: "<<end<<"\n";
+
       subColLabels = sortedLabels.cols(begin, end) + 
               arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
 
+      // subColLabels.print("subColLabels is: ");
+
       subColAtts = sortedAtt.cols(begin, end) + 
               arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
+
+      // subColAtts.print("subColAtts is: ");       
 
       // now using subColLabels and subColAtts to calculate entropuy
       entropy += CalculateEntropy(subColAtts, subColLabels);
 
       i = end + 1;
       count = 0;
+
+      // std::cout<<"Value of i: "<<i<<"\n";
     }
     else
+    {
       i++;
+      // std::cout<<"Value of i: "<<i<<"\n";
+    } 
   }
   return entropy;
 }
@@ -202,11 +267,13 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
                       on which we now train the decision stump.
  */
 template <typename MatType>
+template <typename rType>
 void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
 {
   int i, count, begin, end;
 
   arma::rowvec sortedSplitAtt = arma::sort(attribute);
+  // sortedSplitAtt.print("This is the value of sortedSplitAtt.");
   arma::uvec sortedSplitIndexAtt = arma::stable_sort_index(attribute.t());
   arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
   arma::mat tempSplit;
@@ -215,13 +282,37 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
     sortedLabels(i) = classLabels(sortedSplitIndexAtt(i));
   
   arma::rowvec subCols;
-  int mostFreq;
+  rType mostFreq;
   i = 0;
   count = 0;
-  while (i < sortedLabels.n_elem - 1)
+  while (i < sortedLabels.n_elem)
   {
     count++;
-    if( sortedLabels(i) != sortedLabels(i + 1) )
+    if (i == sortedLabels.n_elem - 1)
+    {
+      begin = i - count + 1;
+      end = i;
+
+      // std::cout<<"Must be an error after here. \n";
+      // std::cout<<"value of begin: "<<begin<<" and value of end: "<<end<<"\n";
+      subCols = sortedLabels.cols(begin, end) + 
+              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+
+      // subCols.print("subCols is: ");
+      
+      mostFreq = CountMostFreq<double>(subCols);
+
+      // std::cout<<"mostFreq is: "<<mostFreq<<"\n";
+
+      tempSplit << sortedSplitAtt(begin)<< mostFreq << arma::endr;
+      split = arma::join_cols(split, tempSplit);
+
+      // tempSplit.print("value of tempSplit is: ");
+      // split.print("value of split is: ");
+
+      i++;
+    }
+    else if( sortedLabels(i) != sortedLabels(i + 1) )
     {
       if (count < bucketSize) // test for differevalues of bucketSize, especially extreme cases. 
       {
@@ -239,13 +330,21 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
       subCols = sortedLabels.cols(begin, end) + 
               arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
 
+      // subCols.print("subCols in TrainOnAtt are: ");
+
       // finding the most freq element in subCols so as to assign a label to the
       // bucket of subCols
 
       mostFreq = CountMostFreq<double>(subCols);
       
-      tempSplit << begin << mostFreq << arma::endr;
+      // std::cout<<"mostFreq is: "<<mostFreq<<"\n";
+
+      tempSplit << sortedSplitAtt(begin)<< mostFreq << arma::endr;
       split = arma::join_cols(split, tempSplit);
+
+      // tempSplit.print("value of tempSplit is: ");
+      // split.print("value of split is: ");
+
       i = end + 1;
       count = 0;
     }
@@ -256,6 +355,7 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
   // now trimming the split matrix so that buckets one after the after 
   // which point to the same classLabel are merged as one big bucket.
   MergeRanges();
+  // split.print("Final value of split after merging is: ");
 }
 
 /* After the "split" matrix has been set up, 
@@ -280,10 +380,11 @@ void DecisionStump<MatType>::MergeRanges()
 
 template <typename MatType>
 template <typename rType>
-size_t DecisionStump<MatType>::CountMostFreq(const arma::Row<rType>& subCols)
+rType DecisionStump<MatType>::CountMostFreq(const arma::Row<rType>& subCols)
 {
   // sort subCols for easier processing.
   arma::Row<rType> sortCounts = arma::sort(subCols);
+  rType element;
   int count = 0, localCount = 0,i;
 
   // an O(n) loop which counts the most frequent element in sortCounts
@@ -292,7 +393,11 @@ size_t DecisionStump<MatType>::CountMostFreq(const arma::Row<rType>& subCols)
     if (i == sortCounts.n_elem - 1)
     {
       if (sortCounts(i-1) == sortCounts(i))
+      {
+        // element = sortCounts(i-1);
         localCount++;
+      }
+      else
       if (localCount > count)
         count = localCount;
     }
@@ -305,10 +410,14 @@ size_t DecisionStump<MatType>::CountMostFreq(const arma::Row<rType>& subCols)
     {
       localCount++;
       if (localCount > count)
+      {
         count = localCount;
+        if(localCount == 1)
+          element = sortCounts(i);
+      }
     }
   }
-  return count;
+  return element;
 }
 
 /* 
