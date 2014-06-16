@@ -27,8 +27,10 @@ DecisionStump<MatType>::DecisionStump(const MatType& data,
                                       const arma::Row<size_t>& labels,
                                       const size_t classes,
                                       size_t inpBucketSize)
-{
-  classLabels = labels + arma::zeros<arma::Row<size_t> >(labels.n_elem);
+{ 
+  arma::Row<size_t> zLabels(labels.n_elem);
+  zLabels.fill(0);
+  classLabels = labels + zLabels;
   
   numClass = classes;
   bucketSize = inpBucketSize;
@@ -104,6 +106,7 @@ void DecisionStump<MatType>::Classify(const MatType& test,
       j = 0;
       flag = 0;
 
+      val = test(splitCol,i);
       while ((j < split.n_rows) && (!flag))
       {
         if(val < split(j,0) && (!j))
@@ -158,7 +161,8 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
   arma::uvec sortedIndexAtt = arma::stable_sort_index(attribute.t());
 
   // vector of sorted labels
-  arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
+  arma::Row<size_t> sortedLabels(attribute.n_elem);//,arma::fill::zeros);
+  sortedLabels.fill(0);
   
   for (i = 0; i < attribute.n_elem; i++)
     sortedLabels(i) = classLabels(sortedIndexAtt(i));
@@ -178,11 +182,17 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
       begin = i - count + 1;
       end = i;
 
-      subColLabels = sortedLabels.cols(begin, end) + 
-              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+      arma::rowvec zSubColLabels((sortedLabels.cols(begin, end)).n_elem);
+      zSubColLabels.fill(0.0);
 
-      subColAtts = sortedAtt.cols(begin, end) + 
-              arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
+      arma::rowvec zSubColAtts((sortedAtt.cols(begin, end)).n_elem);
+      zSubColAtts.fill(0.0);
+
+      subColLabels = sortedLabels.cols(begin, end) + zSubColLabels; 
+              // arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+
+      subColAtts = sortedAtt.cols(begin, end) + zSubColAtts;
+              // arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
 
       entropy += CalculateEntropy(subColAtts, subColLabels);
       i++;
@@ -203,11 +213,17 @@ double DecisionStump<MatType>::SetupSplitAttribute(const arma::rowvec& attribute
         end = i;
       }
 
-      subColLabels = sortedLabels.cols(begin, end) + 
-              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+      arma::rowvec zSubColLabels((sortedLabels.cols(begin, end)).n_elem);
+      zSubColLabels.fill(0.0);
 
-      subColAtts = sortedAtt.cols(begin, end) + 
-              arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
+      arma::rowvec zSubColAtts((sortedAtt.cols(begin, end)).n_elem);
+      zSubColAtts.fill(0.0);
+
+      subColLabels = sortedLabels.cols(begin, end) + zSubColLabels;
+              // arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+
+      subColAtts = sortedAtt.cols(begin, end) + zSubColAtts;
+              // arma::zeros<arma::rowvec>((sortedAtt.cols(begin, end)).n_elem);
 
       // now using subColLabels and subColAtts to calculate entropuy
       entropy += CalculateEntropy(subColAtts, subColLabels);
@@ -237,7 +253,8 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
 
   arma::rowvec sortedSplitAtt = arma::sort(attribute);
   arma::uvec sortedSplitIndexAtt = arma::stable_sort_index(attribute.t());
-  arma::Row<size_t> sortedLabels(attribute.n_elem,arma::fill::zeros);
+  arma::Row<size_t> sortedLabels(attribute.n_elem);//,arma::fill::zeros);
+  sortedLabels.fill(0);
   arma::mat tempSplit;
 
   for (i = 0; i < attribute.n_elem; i++)
@@ -255,8 +272,10 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
       begin = i - count + 1;
       end = i;
 
-      subCols = sortedLabels.cols(begin, end) + 
-              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+      arma::rowvec zSubCols((sortedLabels.cols(begin, end)).n_elem);
+      zSubCols.fill(0.0);
+      subCols = sortedLabels.cols(begin, end) + zSubCols;
+              // arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
 
       mostFreq = CountMostFreq<double>(subCols);
 
@@ -280,8 +299,11 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute)
         begin = i - count + 1;
         end = i;
       }
-      subCols = sortedLabels.cols(begin, end) + 
-              arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
+      arma::rowvec zSubCols((sortedLabels.cols(begin, end)).n_elem);
+      zSubCols.fill(0.0);
+
+      subCols = sortedLabels.cols(begin, end) + zSubCols;
+              // arma::zeros<arma::rowvec>((sortedLabels.cols(begin, end)).n_elem);
 
       // finding the most freq element in subCols so as to assign a label to the
       // bucket of subCols
@@ -396,8 +418,10 @@ double DecisionStump<MatType>::CalculateEntropy(const arma::rowvec& attribute,
 
   arma::rowvec uniqueAtt = arma::unique(attribute);
   arma::rowvec uniqueLabel = arma::unique(labels);
-  arma::Row<size_t> numElem(uniqueAtt.n_elem,arma::fill::zeros); 
-  arma::Mat<size_t> entropyArray(uniqueAtt.n_elem,numClass,arma::fill::zeros); 
+  arma::Row<size_t> numElem(uniqueAtt.n_elem);//,arma::fill::zeros); 
+  numElem.fill(0);
+  arma::Mat<size_t> entropyArray(uniqueAtt.n_elem,numClass);//,arma::fill::zeros); 
+  entropyArray.fill(0);
   
   // populating entropyArray and numElem, they are to be used as 
   // helpers to calculate entropy
