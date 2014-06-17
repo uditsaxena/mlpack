@@ -20,10 +20,12 @@ class Perceptron
 public:
   //Constructor
   Perceptron(const MatType& data, const arma::Row<size_t>& labels);
+  // The classification function.
+  void Classify(const MatType& test, arma::Row<size_t>& predictedLabels);
 private:
   arma::Row<size_t> classLabels;
   arma::mat weightVectors,trainData;
-  void UpdateWeights(size_t rowIndex, size_t labelIndex);
+  void UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex);
 };
 } // namespace perceptron
 } // namespace mlpack
