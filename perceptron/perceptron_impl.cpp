@@ -39,9 +39,9 @@ Perceptron<MatType>::Perceptron(const MatType& data,
 
   trainData.print("This is the trainData matrix: ");
   classLabels.print("This is the classLabels matrix: ");
-  weightVectors.print("This is the random weightVectors matrix: ");
+  weightVectors.print("This is the weightVectors matrix: ");
 
-  int iterations = 100000, j, i = 0, flag = 0;
+  int iterations = 2, j, i = 0, flag = 0;
   size_t tempLabel; 
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
@@ -57,7 +57,7 @@ Perceptron<MatType>::Perceptron(const MatType& data,
     // Now this inner loop is for going through the dataset in each iteration
     for (j = 0; j < data.n_cols; j++)
     {
-      flag = 1;
+      // flag = 1;
       tempLabelMat = weightVectors * data.col(j);
 
       // tempLabelMat.print("In the iterations, value of tempLabelMat: ");
@@ -72,10 +72,9 @@ Perceptron<MatType>::Perceptron(const MatType& data,
         std::cout<<"Not Equal. The value of maxIndexRow is "<<maxIndexRow
                  <<"\nAnd the value of tempLabel is: "<<tempLabel
                  <<"\nValue of maxVal is : "<<maxVal<<"\n";
-        //send into another function which updates as required.
-        // std::cout<<"Not equal !";
         // send max index row for knowing which weight to update, 
-        // send tempLabel to know the value of the vector to update it with.
+        // send j to know the value of the vector to update it with.
+        // send templabel to know the correct class 
         UpdateWeights(maxIndexRow, j, tempLabel);
       }
     }
