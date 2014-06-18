@@ -24,7 +24,7 @@ public:
   void Classify(const MatType& test, arma::Row<size_t>& predictedLabels);
 private:
   arma::Row<size_t> classLabels;
-  arma::mat weightVectors,trainData;
+  arma::mat weightVectors,trainData, biasVector;
   void UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex);
 };
 } // namespace perceptron

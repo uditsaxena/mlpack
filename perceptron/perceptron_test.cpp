@@ -3,7 +3,7 @@
  * @author: Udit Saxena
  */
 #include <mlpack/core.hpp>
-#include "perceptron.hpp"
+#include "main/perceptron.hpp"
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE Perceptron

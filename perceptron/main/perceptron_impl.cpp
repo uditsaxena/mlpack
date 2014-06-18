@@ -18,10 +18,10 @@ Perceptron<MatType>::Perceptron(const MatType& data,
 {
   arma::Row<size_t> uniqueLabels = arma::unique(labels);
   // a case for random initialization.
-  arma::mat tempWeights(uniqueLabels.n_elem, data.n_rows);// = arma::randu<MatType>
+  arma::mat tempWeights(uniqueLabels.n_elem, data.n_rows + 1);// = arma::randu<MatType>
   tempWeights.fill(0.0);
   // now that the matrix has been initialized, start training.
-  
+
   arma::Row<size_t> zLabels(labels.n_elem);
   zLabels.fill(0);
   classLabels = labels + zLabels;
@@ -30,9 +30,15 @@ Perceptron<MatType>::Perceptron(const MatType& data,
   zData.fill(0);
   trainData = data + zData;
 
+  MatType zOnes(1, data.n_cols);
+  zOnes.fill(1);
+  trainData.insert_rows(0, zOnes);
+
   arma::mat zWeights(tempWeights);
   zWeights.fill(0.0);
   weightVectors = tempWeights + zWeights;
+
+  
 
   // store labels and tempweight matrix into class variables.
   // these can be avoided if UpdateWeights is not a separate function.
@@ -41,7 +47,7 @@ Perceptron<MatType>::Perceptron(const MatType& data,
   classLabels.print("This is the classLabels matrix: ");
   weightVectors.print("This is the weightVectors matrix: ");
 
-  int iterations = 2, j, i = 0, flag = 0;
+  int iterations = 10, j, i = 0, flag = 0;
   size_t tempLabel; 
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
@@ -58,13 +64,13 @@ Perceptron<MatType>::Perceptron(const MatType& data,
     for (j = 0; j < data.n_cols; j++)
     {
       // flag = 1;
-      tempLabelMat = weightVectors * data.col(j);
+      tempLabelMat = weightVectors * trainData.col(j);
 
       // tempLabelMat.print("In the iterations, value of tempLabelMat: ");
 
       maxVal = tempLabelMat.max(maxIndexRow, maxIndexCol);
       // labels.print("Value of labels: ");
-      if(maxIndexRow != labels(0,j))
+      if(maxIndexRow != classLabels(0,j))
       {
         flag = 0;
         tempLabel = labels(0,j);
@@ -91,9 +97,13 @@ void Perceptron<MatType>::Classify(const MatType& test,
   arma::mat tempLabelMat;
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
+  MatType testData = test;
+  MatType zOnes(1, test.n_cols);
+  zOnes.fill(1);
+  testData.insert_rows(0, zOnes);
   for (i = 0; i < test.n_cols; i++)
   {
-    tempLabelMat = weightVectors * test.col(i);
+    tempLabelMat = weightVectors * testData.col(i);
     maxVal = tempLabelMat.max(maxIndexRow, maxIndexCol);
 
     predictedLabels(0,i) = maxIndexRow;
