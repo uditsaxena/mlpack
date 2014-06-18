@@ -21,8 +21,7 @@ PARAM_STRING_REQ("labels_file", "A file containing labels for the training set."
   "l");
 PARAM_STRING_REQ("test_file", "A file containing the test set.", "te");
 
-//optional
-// PARAM_INT("bias","Value for bias","b", 1);
+//optional parameters.
 PARAM_STRING("output", "The file in which the predicted labels for the test set"
     " will be written.", "o", "output.csv");
 
@@ -58,8 +57,6 @@ int main(int argc, char *argv[])
     Log::Fatal << "Test data dimensionality (" << testingData.n_rows << ") "
         << "must be the same as training data (" << trainingData.n_rows - 1
         << ")!" << std::endl;
-  
-  // int bias = CLI::GetParam<int>("bias");
 
   Timer::Start("Training");
   Perceptron<> p(trainingData, labels);

@@ -12,83 +12,87 @@
 namespace mlpack {
 namespace perceptron {
 
+/*
+  Constructor - Constructs the perceptron. Or rather, builds the weightVectors
+  matrix, which is later used in Classification. 
+  It adds a bias input vector of 1 to the input data to take care of the bias
+  weights.
+
+  @param: data - Input, training data.
+  @param: labels - Labels of dataset.
+*/
 template <typename MatType>
 Perceptron<MatType>::Perceptron(const MatType& data,
                                 const arma::Row<size_t>& labels)
 {
   arma::Row<size_t> uniqueLabels = arma::unique(labels);
-  // a case for random initialization.
-  arma::mat tempWeights(uniqueLabels.n_elem, data.n_rows + 1);// = arma::randu<MatType>
+  arma::mat tempWeights(uniqueLabels.n_elem, data.n_rows + 1);
   tempWeights.fill(0.0);
-  // now that the matrix has been initialized, start training.
+  
+  // Start training.
+  classLabels = labels; 
 
-  arma::Row<size_t> zLabels(labels.n_elem);
-  zLabels.fill(0);
-  classLabels = labels + zLabels;
-
-  MatType zData(data);
-  zData.fill(0);
-  trainData = data + zData;
-
+  trainData = data;
+  // inserting a row of 1's at the top of the training data set.
   MatType zOnes(1, data.n_cols);
   zOnes.fill(1);
   trainData.insert_rows(0, zOnes);
 
-  arma::mat zWeights(tempWeights);
-  zWeights.fill(0.0);
-  weightVectors = tempWeights + zWeights;
-
-  
+  weightVectors = tempWeights;
 
   // store labels and tempweight matrix into class variables.
   // these can be avoided if UpdateWeights is not a separate function.
 
-  trainData.print("This is the trainData matrix: ");
-  classLabels.print("This is the classLabels matrix: ");
-  weightVectors.print("This is the weightVectors matrix: ");
+  // This too can be parameterized.
+  int iterations = 10;
 
-  int iterations = 10, j, i = 0, flag = 0;
+  int j, i = 0, converged = 0;
   size_t tempLabel; 
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
   arma::mat tempLabelMat;
 
-  while ((i < iterations) && (!flag))
+  while ((i < iterations) && (!converged))
   {
     // This outer loop is for each iteration, 
-    // and we use the flag variable for noting whether or not
+    // and we use the 'converged' variable for noting whether or not
     // convergence has been reached.
     i++;
-    flag = 1;
+    converged = 1;
+
     // Now this inner loop is for going through the dataset in each iteration
     for (j = 0; j < data.n_cols; j++)
     {
-      // flag = 1;
+      // Multiplying for each variable and checking 
+      // whether the current weight vector correctly classifies this.
       tempLabelMat = weightVectors * trainData.col(j);
 
-      // tempLabelMat.print("In the iterations, value of tempLabelMat: ");
-
       maxVal = tempLabelMat.max(maxIndexRow, maxIndexCol);
-      // labels.print("Value of labels: ");
+
+      //checking whether prediction is correct.
       if(maxIndexRow != classLabels(0,j))
       {
-        flag = 0;
+        // due to incorrect prediction, convergence set to 0
+        converged = 0;
         tempLabel = labels(0,j);
 
-        std::cout<<"Not Equal. The value of maxIndexRow is "<<maxIndexRow
-                 <<"\nAnd the value of tempLabel is: "<<tempLabel
-                 <<"\nValue of maxVal is : "<<maxVal<<"\n";
-        // send max index row for knowing which weight to update, 
+        // send maxIndexRow for knowing which weight to update, 
         // send j to know the value of the vector to update it with.
-        // send templabel to know the correct class 
+        // send tempLabel to know the correct class 
         UpdateWeights(maxIndexRow, j, tempLabel);
       }
     }
   }
-  weightVectors.print("final value of weightVectors is : ");
 }
 
-/*The classification function.*/
+/*
+  Classification function. After training, use the weightVectors matrix to 
+  classify test, and put the predicted classes in predictedLabels.
+
+  @param: test - testing data or data to classify. 
+  @param: predictedLabels - vector to store the predicted classes after
+                            classifying test
+ */
 template <typename MatType>
 void Perceptron<MatType>::Classify(const MatType& test, 
                                    arma::Row<size_t>& predictedLabels)
@@ -98,9 +102,11 @@ void Perceptron<MatType>::Classify(const MatType& test,
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
   MatType testData = test;
+  
   MatType zOnes(1, test.n_cols);
   zOnes.fill(1);
   testData.insert_rows(0, zOnes);
+  
   for (i = 0; i < test.n_cols; i++)
   {
     tempLabelMat = weightVectors * testData.col(i);
@@ -111,19 +117,25 @@ void Perceptron<MatType>::Classify(const MatType& test,
   predictedLabels.print("Value of predictedLabels: ");
 }
 
+/*
+  This function is called by the constructor to update the weightVectors
+  matrix. It decreases the weights of the incorrectly classified class while
+  increasing the weight of the correct class it should have been classified to.
+
+  @param: rowIndex - index of the row which has been incorrectly predicted.
+  @param: labelIndex - index of the vector in trainData.
+  @param: vectorIndex - index of the class which should have been predicted.
+ */
 template <typename MatType>
 void Perceptron<MatType>::UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex)
 {
   MatType instance = trainData.col(labelIndex);
-  instance.print("\nvalue of f; ");
-  weightVectors.print("Value of weightVectors before update: ");
+  
   weightVectors.row(rowIndex) = weightVectors.row(rowIndex) - 
                                instance.t();
 
   weightVectors.row(vectorIndex) = weightVectors.row(vectorIndex) + 
                                  instance.t();
-  weightVectors.print("Value of weightVectors after update: ");
-
   // updating like so: 
   // for correct class : w = w + x
   // for incorrect class : w = w - x

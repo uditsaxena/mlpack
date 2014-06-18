@@ -57,10 +57,7 @@ int main(int argc, char *argv[])
   data::NormalizeLabels(labelsIn.unsafe_col(0), labels, mappings);
 
   const size_t num_classes = CLI::GetParam<size_t>("num_classes");
-  /*
-  Should number of classes be input or should it be 
-  derived from the labels row ?
-  */
+  
   const string testingDataFilename = CLI::GetParam<string>("test_file");
   mat testingData;
   data::Load(testingDataFilename, testingData, true);
