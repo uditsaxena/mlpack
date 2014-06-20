@@ -10,11 +10,15 @@
 #define _MLPACK_METHODS_PERCEPTRON_HPP
 
 #include <mlpack/core.hpp>
+#include "InitializationMethods/zero_init.hpp"
+#include "InitializationMethods/random_init.hpp"
+
 
 namespace mlpack {
 namespace perceptron {
 
-template <typename MatType = arma::mat>
+template <typename WeightInitializationPolicy = ZeroInitialization, 
+          typename MatType = arma::mat>
 class Perceptron
 {
   /*
@@ -32,7 +36,7 @@ public:
   @param: data - Input, training data.
   @param: labels - Labels of dataset.
   */
-  Perceptron(const MatType& data, const arma::Row<size_t>& labels);
+  Perceptron(const MatType& data, const arma::Row<size_t>& labels, int iterations);
 
   /*
   Classification function. After training, use the weightVectors matrix to 

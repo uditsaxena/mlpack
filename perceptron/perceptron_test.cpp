@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(AND)
   Mat<size_t> labels;
   labels << 0 << 0 << 1 << 0;
 
-  Perceptron<> p(trainData, labels.row(0));
+  Perceptron<> p(trainData, labels.row(0), 1000);
 
   mat testData;
   testData << 0 << 1 << 1 << 0 << endr
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(OR)
   Mat<size_t> labels;
   labels << 1 << 1 << 1 << 0;
 
-  Perceptron<> p(trainData, labels.row(0));
+  Perceptron<> p(trainData, labels.row(0), 1000);
 
   mat testData;
   testData << 0 << 1 << 1 << 0 << endr
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(RANDOM3)
   Mat<size_t> labels;
   labels << 0 << 0 << 0 << 1 << 1 << 1 << 2 << 2 << 2;
 
-  Perceptron<> p(trainData, labels.row(0));
+  Perceptron<> p(trainData, labels.row(0), 1000);
 
   mat testData;
   testData << 0 << 1 << 1 << endr
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(TWOPOINTS)
   Mat<size_t> labels;
   labels << 0 << 1 ;
 
-  Perceptron<> p(trainData, labels.row(0));
+  Perceptron<> p(trainData, labels.row(0), 1000);
 
   mat testData;
   testData << 0 << 1 << endr

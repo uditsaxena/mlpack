@@ -24,6 +24,8 @@ PARAM_STRING_REQ("test_file", "A file containing the test set.", "te");
 //optional parameters.
 PARAM_STRING("output", "The file in which the predicted labels for the test set"
     " will be written.", "o", "output.csv");
+PARAM_INT("iterations","The maximum number of iterations the perceptron is "
+  "to be run", "i", 1000)
 
 int main(int argc, char *argv[])
 {
@@ -57,9 +59,10 @@ int main(int argc, char *argv[])
     Log::Fatal << "Test data dimensionality (" << testingData.n_rows << ") "
         << "must be the same as training data (" << trainingData.n_rows - 1
         << ")!" << std::endl;
-
+  int iterations = CLI::GetParam<std::int>("iterations");
+  
   Timer::Start("Training");
-  Perceptron<> p(trainingData, labels);
+  Perceptron<> p(trainingData, labels, iterations);
   Timer::Stop("Training");
 
   Row<size_t> predictedLabels(testingData.n_cols);
