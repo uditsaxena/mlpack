@@ -20,6 +20,8 @@ namespace perceptron {
 
   @param: data - Input, training data.
   @param: labels - Labels of dataset.
+   @param: iterations - maximum number of iterations the perceptron
+                       learn algorithm is to be run.
 */
 template <typename LearnPolicy, typename WeightInitializationPolicy, typename MatType>
 Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
@@ -38,11 +40,6 @@ Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const M
   MatType zOnes(1, data.n_cols);
   zOnes.fill(1);
   trainData.insert_rows(0, zOnes);
-
-  // store labels and tempweight matrix into class variables.
-  // these can be avoided if UpdateWeights is not a separate function.
-
-  // This too can be parameterized.
 
   int j, i = 0, converged = 0;
   size_t tempLabel; 
@@ -79,7 +76,8 @@ Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const M
         // send maxIndexRow for knowing which weight to update, 
         // send j to know the value of the vector to update it with.
         // send tempLabel to know the correct class 
-        LP.UpdateWeights(trainData, weightVectors, classLabels, maxIndexRow, j, tempLabel);
+        LP.UpdateWeights(trainData, weightVectors, 
+                         j, tempLabel, maxIndexRow);
       }
     }
   }
@@ -94,8 +92,8 @@ Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const M
                             classifying test
  */
 template <typename LearnPolicy, typename WeightInitializationPolicy, typename MatType>
-void Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Classify(const MatType& test, 
-                                   arma::Row<size_t>& predictedLabels)
+void Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Classify(
+                const MatType& test, arma::Row<size_t>& predictedLabels)
 {
   int i;
   arma::mat tempLabelMat;
@@ -115,33 +113,6 @@ void Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Classify(cons
     predictedLabels(0,i) = maxIndexRow;
   }
 }
-
-/*
-  This function is called by the constructor to update the weightVectors
-  matrix. It decreases the weights of the incorrectly classified class while
-  increasing the weight of the correct class it should have been classified to.
-
-  @param: rowIndex - index of the row which has been incorrectly predicted.
-  @param: labelIndex - index of the vector in trainData.
-  @param: vectorIndex - index of the class which should have been predicted.
- */
-/*template <typename WeightInitializationPolicy, typename MatType>
-void Perceptron<WeightInitializationPolicy, MatType>::UpdateWeights(
-                                                      size_t rowIndex, 
-                                                      size_t labelIndex, 
-                                                      size_t vectorIndex)
-{
-  MatType instance = trainData.col(labelIndex);
-  
-  weightVectors.row(rowIndex) = weightVectors.row(rowIndex) - 
-                               instance.t();
-
-  weightVectors.row(vectorIndex) = weightVectors.row(vectorIndex) + 
-                                 instance.t();
-  // updating like so: 
-  // for correct class : w = w + x
-  // for incorrect class : w = w - x
-};*/
 
 }; // namespace perceptron
 }; // namespace mlpack

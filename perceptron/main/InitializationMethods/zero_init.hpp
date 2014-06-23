@@ -8,7 +8,10 @@
 #define _MLPACK_METHOS_PERCEPTRON_ZEROINIT
 
 #include <mlpack/core.hpp>
-
+/*
+This class is used to initialize the matrix
+weightVectors to zero.
+*/
 namespace mlpack {
 namespace perceptron {
   class ZeroInitialization

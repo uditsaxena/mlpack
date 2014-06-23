@@ -28,6 +28,10 @@ class Perceptron
   This class implements a simple perceptron i.e. a single layer 
   neural network. It converges if the supplied training dataset is 
   linearly separable.
+
+  LearnPolicy: Options of SimpleWeightUpdate and GradientDescent.
+  WeightInitializationPolicy: Option of ZeroInitialization and 
+                              RandomInitialization.
   */
 public:
   /*
@@ -38,6 +42,8 @@ public:
 
   @param: data - Input, training data.
   @param: labels - Labels of dataset.
+  @param: iterations - maximum number of iterations the perceptron
+                       learn algorithm is to be run.
   */
   Perceptron(const MatType& data, const arma::Row<size_t>& labels, int iterations);
 

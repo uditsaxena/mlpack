@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   // normalize the labels
   data::NormalizeLabels(labelsIn.unsafe_col(0), labels, mappings);
 
-  const string testingDataFilename = CLI::GetParam<std::string>("test_file");
+  const string testingDataFilename = CLI::GetParam<string>("test_file");
   mat testingData;
   data::Load(testingDataFilename, testingData, true);
 
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     Log::Fatal << "Test data dimensionality (" << testingData.n_rows << ") "
         << "must be the same as training data (" << trainingData.n_rows - 1
         << ")!" << std::endl;
-  int iterations = CLI::GetParam<std::int>("iterations");
+  int iterations = CLI::GetParam<int>("iterations");
   
   Timer::Start("Training");
   Perceptron<> p(trainingData, labels, iterations);
