@@ -78,7 +78,13 @@ BOOST_AUTO_TEST_CASE(PerfectSplitOnZero)
   Row<size_t> predictedLabels(testingData.n_cols);
   ds.Classify(testingData, predictedLabels);
 
-  data::Save(output, predictedLabels, true, true);
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,4),1);
+
+  
 }
 
 /*
@@ -107,7 +113,9 @@ BOOST_AUTO_TEST_CASE(BinningTesting)
   Row<size_t> predictedLabels(testingData.n_cols);
   ds.Classify(testingData, predictedLabels);
 
-  data::Save(output, predictedLabels, true, true);
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+
+  
 }
 
 /*
@@ -138,7 +146,11 @@ BOOST_AUTO_TEST_CASE(PerfectMultiClassSplit)
   Row<size_t> predictedLabels(testingData.n_cols);
   ds.Classify(testingData, predictedLabels);
 
-  data::Save(output, predictedLabels, true, true);
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),2);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),3);
+  
 }
 
 /*
@@ -170,7 +182,15 @@ BOOST_AUTO_TEST_CASE(MultiClassSplit)
   Row<size_t> predictedLabels(testingData.n_cols);
   ds.Classify(testingData, predictedLabels);
 
-  data::Save(output, predictedLabels, true, true);
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,4),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,5),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,6),2);
+  BOOST_CHECK_EQUAL(predictedLabels(0,7),2);
+  
 }
 
 BOOST_AUTO_TEST_SUITE_END();

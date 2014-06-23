@@ -21,8 +21,8 @@ namespace perceptron {
   @param: data - Input, training data.
   @param: labels - Labels of dataset.
 */
-template <typename WeightInitializationPolicy, typename MatType>
-Perceptron<WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
+template <typename LearnPolicy, typename WeightInitializationPolicy, typename MatType>
+Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
                                 const arma::Row<size_t>& labels, int iterations)
 {
   arma::Row<size_t> uniqueLabels = arma::unique(labels);
@@ -49,6 +49,8 @@ Perceptron<WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
   arma::mat tempLabelMat;
+
+  LearnPolicy LP;
 
   while ((i < iterations) && (!converged))
   {
@@ -77,7 +79,7 @@ Perceptron<WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
         // send maxIndexRow for knowing which weight to update, 
         // send j to know the value of the vector to update it with.
         // send tempLabel to know the correct class 
-        UpdateWeights(maxIndexRow, j, tempLabel);
+        LP.UpdateWeights(trainData, weightVectors, classLabels, maxIndexRow, j, tempLabel);
       }
     }
   }
@@ -91,8 +93,8 @@ Perceptron<WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
   @param: predictedLabels - vector to store the predicted classes after
                             classifying test
  */
-template <typename WeightInitializationPolicy, typename MatType>
-void Perceptron<WeightInitializationPolicy, MatType>::Classify(const MatType& test, 
+template <typename LearnPolicy, typename WeightInitializationPolicy, typename MatType>
+void Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Classify(const MatType& test, 
                                    arma::Row<size_t>& predictedLabels)
 {
   int i;
@@ -112,7 +114,6 @@ void Perceptron<WeightInitializationPolicy, MatType>::Classify(const MatType& te
 
     predictedLabels(0,i) = maxIndexRow;
   }
-  predictedLabels.print("Value of predictedLabels: ");
 }
 
 /*
@@ -124,8 +125,11 @@ void Perceptron<WeightInitializationPolicy, MatType>::Classify(const MatType& te
   @param: labelIndex - index of the vector in trainData.
   @param: vectorIndex - index of the class which should have been predicted.
  */
-template <typename WeightInitializationPolicy, typename MatType>
-void Perceptron<WeightInitializationPolicy, MatType>::UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex)
+/*template <typename WeightInitializationPolicy, typename MatType>
+void Perceptron<WeightInitializationPolicy, MatType>::UpdateWeights(
+                                                      size_t rowIndex, 
+                                                      size_t labelIndex, 
+                                                      size_t vectorIndex)
 {
   MatType instance = trainData.col(labelIndex);
   
@@ -137,7 +141,7 @@ void Perceptron<WeightInitializationPolicy, MatType>::UpdateWeights(size_t rowIn
   // updating like so: 
   // for correct class : w = w + x
   // for incorrect class : w = w - x
-};
+};*/
 
 }; // namespace perceptron
 }; // namespace mlpack

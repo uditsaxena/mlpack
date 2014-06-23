@@ -14,7 +14,6 @@
 using namespace mlpack;
 using namespace arma;
 using namespace mlpack::perceptron;
-using namespace std;
 
 BOOST_AUTO_TEST_SUITE(PERCETRONTEST);
 /*
@@ -23,7 +22,6 @@ AND gate classifier.
 */
 BOOST_AUTO_TEST_CASE(AND)
 {
-  cout<<"\nAnd Case: \n";
   mat trainData;
   trainData << 0 << 1 << 1 << 0 << endr
             << 1 << 0 << 1 << 0 << endr;
@@ -37,6 +35,12 @@ BOOST_AUTO_TEST_CASE(AND)
            << 1 << 0 << 1 << 0 << endr;
   Row<size_t> predictedLabels(testData.n_cols);
   p.Classify(testData, predictedLabels);
+
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),0);
+  
 }
 
 /*
@@ -45,7 +49,6 @@ OR gate classifier.
 */
 BOOST_AUTO_TEST_CASE(OR)
 {
-  cout<<"\nOR Case: \n";
   mat trainData;
   trainData << 0 << 1 << 1 << 0 << endr
             << 1 << 0 << 1 << 0 << endr;
@@ -60,6 +63,11 @@ BOOST_AUTO_TEST_CASE(OR)
             << 1 << 0 << 1 << 0 << endr;
   Row<size_t> predictedLabels(testData.n_cols);
   p.Classify(testData, predictedLabels);
+
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),0);
 }
 
 /*
@@ -68,7 +76,6 @@ separable data with 3 classes.
 */
 BOOST_AUTO_TEST_CASE(RANDOM3)
 {
-  cout<<"\n3 linearly separable classes Case: \n";
   mat trainData;
   trainData << 0 << 1 << 1 << 4 << 5 << 4 << 1 << 2 << 1 << endr
            << 1 << 0 << 1 << 1 << 1 << 2 << 4 << 5 << 4 << endr;
@@ -83,6 +90,10 @@ BOOST_AUTO_TEST_CASE(RANDOM3)
            << 1 << 0 << 1 << endr;
   Row<size_t> predictedLabels(testData.n_cols);
   p.Classify(testData, predictedLabels);
+  
+  for (int i = 0; i<predictedLabels.n_cols; i++)
+    BOOST_CHECK_EQUAL(predictedLabels(0,i),0);
+
 }
 
 /*
@@ -91,7 +102,6 @@ which has only TWO points which belong to different classes.
 */
 BOOST_AUTO_TEST_CASE(TWOPOINTS)
 {
-  cout<<"\n2 linearly separable points Case: \n";
   mat trainData;
   trainData << 0 << 1 << endr
            << 1 << 0 << endr;
@@ -106,6 +116,36 @@ BOOST_AUTO_TEST_CASE(TWOPOINTS)
            << 1 << 0 << endr;
   Row<size_t> predictedLabels(testData.n_cols);
   p.Classify(testData, predictedLabels);
-}
 
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),1);
+}
+/*
+This tests the convergence of the perceptron on a dataset
+which has a non-linearly separable dataset.
+*/
+BOOST_AUTO_TEST_CASE(NONLINSEPDS)
+{
+  mat trainData;
+  trainData << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 
+            << 1 << 2 << 3 << 4 << 5 << 6 << 7 << 8 << endr
+            << 1 << 1 << 1 << 1 << 1 << 1 << 1 << 1 
+            << 2 << 2 << 2 << 2 << 2 << 2 << 2 << 2 << endr;
+
+  Mat<size_t> labels;
+  labels << 0 << 0 << 0 << 1 << 0 << 1 << 1 << 1
+         << 0 << 0 << 0 << 1 << 0 << 1 << 1 << 1;
+  Perceptron<> p(trainData, labels.row(0), 1000);
+
+  mat testData;
+  testData << 3 << 4 << 5 << 6 << endr
+           << 3 << 2.3 << 1.7 << 1.5 << endr;
+  Row<size_t> predictedLabels(testData.n_cols);
+  p.Classify(testData, predictedLabels);
+
+  BOOST_CHECK_EQUAL(predictedLabels(0,0),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,1),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),1);
+}
 BOOST_AUTO_TEST_SUITE_END();
