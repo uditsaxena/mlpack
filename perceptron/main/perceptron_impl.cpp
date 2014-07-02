@@ -23,8 +23,8 @@ namespace perceptron {
    @param: iterations - maximum number of iterations the perceptron
                        learn algorithm is to be run.
 */
-template <typename LearnPolicy, typename WeightInitializationPolicy, typename MatType>
-Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
+template <typename WeightInitializationPolicy, typename MatType>
+Perceptron<WeightInitializationPolicy, MatType>::Perceptron(const MatType& data,
                                 const arma::Row<size_t>& labels, int iterations)
 {
   arma::Row<size_t> uniqueLabels = arma::unique(labels);
@@ -46,8 +46,6 @@ Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const M
   arma::uword maxIndexRow, maxIndexCol;
   double maxVal;
   arma::mat tempLabelMat;
-
-  LearnPolicy LP;
 
   while ((i < iterations) && (!converged))
   {
@@ -76,8 +74,12 @@ Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const M
         // send maxIndexRow for knowing which weight to update, 
         // send j to know the value of the vector to update it with.
         // send tempLabel to know the correct class 
+<<<<<<< HEAD
         LP.UpdateWeights(trainData, weightVectors, 
                          j, tempLabel, maxIndexRow);
+=======
+        UpdateWeights(maxIndexRow, j, tempLabel);
+>>>>>>> parent of 6ea357b... New tests, new learning policies added.
       }
     }
   }
@@ -91,9 +93,15 @@ Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Perceptron(const M
   @param: predictedLabels - vector to store the predicted classes after
                             classifying test
  */
+<<<<<<< HEAD
 template <typename LearnPolicy, typename WeightInitializationPolicy, typename MatType>
 void Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Classify(
                 const MatType& test, arma::Row<size_t>& predictedLabels)
+=======
+template <typename WeightInitializationPolicy, typename MatType>
+void Perceptron<WeightInitializationPolicy, MatType>::Classify(const MatType& test, 
+                                   arma::Row<size_t>& predictedLabels)
+>>>>>>> parent of 6ea357b... New tests, new learning policies added.
 {
   int i;
   arma::mat tempLabelMat;
@@ -112,8 +120,36 @@ void Perceptron<LearnPolicy, WeightInitializationPolicy, MatType>::Classify(
 
     predictedLabels(0,i) = maxIndexRow;
   }
+  predictedLabels.print("Value of predictedLabels: ");
 }
 
+<<<<<<< HEAD
+=======
+/*
+  This function is called by the constructor to update the weightVectors
+  matrix. It decreases the weights of the incorrectly classified class while
+  increasing the weight of the correct class it should have been classified to.
+
+  @param: rowIndex - index of the row which has been incorrectly predicted.
+  @param: labelIndex - index of the vector in trainData.
+  @param: vectorIndex - index of the class which should have been predicted.
+ */
+template <typename WeightInitializationPolicy, typename MatType>
+void Perceptron<WeightInitializationPolicy, MatType>::UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex)
+{
+  MatType instance = trainData.col(labelIndex);
+  
+  weightVectors.row(rowIndex) = weightVectors.row(rowIndex) - 
+                               instance.t();
+
+  weightVectors.row(vectorIndex) = weightVectors.row(vectorIndex) + 
+                                 instance.t();
+  // updating like so: 
+  // for correct class : w = w + x
+  // for incorrect class : w = w - x
+};
+
+>>>>>>> parent of 6ea357b... New tests, new learning policies added.
 }; // namespace perceptron
 }; // namespace mlpack
 

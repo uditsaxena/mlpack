@@ -12,15 +12,12 @@
 #include <mlpack/core.hpp>
 #include "InitializationMethods/zero_init.hpp"
 #include "InitializationMethods/random_init.hpp"
-#include "LearnPolicy/SimpleWeightUpdate.hpp"
-#include "LearnPolicy/GradientDescent.hpp"
 
 
 namespace mlpack {
 namespace perceptron {
 
-template <typename LearnPolicy = SimpleWeightUpdate, 
-          typename WeightInitializationPolicy = ZeroInitialization, 
+template <typename WeightInitializationPolicy = ZeroInitialization, 
           typename MatType = arma::mat>
 class Perceptron
 {
@@ -77,7 +74,7 @@ private:
   @param: labelIndex - index of the vector in trainData.
   @param: vectorIndex - index of the class which should have been predicted.
   */
-  // void UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex);
+  void UpdateWeights(size_t rowIndex, size_t labelIndex, size_t vectorIndex);
 };
 } // namespace perceptron
 } // namespace mlpack

@@ -1,5 +1,5 @@
 /*
- *  @file: randominit.hpp
+ *  @file: randominit.cpp
  *  @author: Udit Saxena
  *
  */
