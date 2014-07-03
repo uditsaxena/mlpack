@@ -45,12 +45,13 @@ class DecisionStump
    */
   void Classify(const MatType& test, arma::Row<size_t>& predictedLabels);
 
+  int splitCol;
  private:
   //! Stores the number of classes.
   size_t numClass;
 
   //! Stores the value of the attribute on which to split.
-  int splitCol;
+  // int splitCol;
 
   //! Size of bucket while determining splitting criterion.
   size_t bucketSize;

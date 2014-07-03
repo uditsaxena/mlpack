@@ -5,8 +5,11 @@
  * Tests for DecisionStump class.
  */
 #include <mlpack/core.hpp>
-#include <mlpack/methods/decision_stump/decision_stump.hpp>
+#include "weak_learner/decision_stump/decision_stump.hpp"
 
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE DecisionStump
+ 
 #include <boost/test/unit_test.hpp>
 #include "old_boost_test_definitions.hpp"
 
@@ -46,6 +49,44 @@ BOOST_AUTO_TEST_CASE(OneClass)
   for (size_t i = 0; i < predictedLabels.size(); i++ )
     BOOST_CHECK_EQUAL(predictedLabels(i), 1);
 
+}
+
+BOOST_AUTO_TEST_CASE(CorrectAttributeChosen)
+{
+  const size_t numClasses = 2;
+  const size_t inpBucketSize = 4;
+
+  mat trainingData;
+  trainingData << 0 << 0 << 0 << 0 << 0 << 1 << 1 << 1 << 1
+               << 2  << 2  << 2  << 2  << 2 << endr
+               << 70 << 90 << 85 << 95 << 70 << 90 << 78 << 65 << 75
+               << 80  << 70  << 80  << 80  << 96 << endr
+               << 1 << 1 << 0 << 0 << 0 << 1 << 0 << 1 << 0
+               << 1  << 1  << 0  << 0  << 0 << endr;
+
+  // No need to normalize labels here.
+  Mat<size_t> labelsIn;
+  labelsIn << 0 << 1 << 1 << 1 << 0 << 0 << 0 << 0
+           << 0 << 1 << 1 << 0 << 0 << 0;
+
+
+  // mat testingData;
+  // testingData << -6.1 << -5.9 << -2.1 << -0.7 << 2.5 << 4.7 << 7.2 << 9.1;
+
+  DecisionStump<> ds(trainingData, labelsIn.row(0), numClasses, inpBucketSize);
+
+  // Row<size_t> predictedLabels(testingData.n_cols);
+  // ds.Classify(testingData, predictedLabels);
+
+  // std::cout<<"Value of the splitting column is : "<<ds.splitCol<<"\n";
+  BOOST_CHECK_EQUAL(ds.splitCol,1);
+  /*BOOST_CHECK_EQUAL(predictedLabels(0,1),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,2),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,3),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,4),0);
+  BOOST_CHECK_EQUAL(predictedLabels(0,5),1);
+  BOOST_CHECK_EQUAL(predictedLabels(0,6),2);
+  BOOST_CHECK_EQUAL(predictedLabels(0,7),2);*/
 }
 
 /**

@@ -147,7 +147,7 @@ double DecisionStump<MatType>::SetupSplitAttribute(
 
   i = 0;
   count = 0;
-
+  double ratioEl;
   // This splits the sorted into buckets of size greater than or equal to
   // inpBucketSize.
   while (i < sortedLabels.n_elem)
@@ -159,8 +159,9 @@ double DecisionStump<MatType>::SetupSplitAttribute(
       // just take this as the last bin.
       begin = i - count + 1;
       end = i;
-
-      entropy += CalculateEntropy<double, size_t>(
+      ratioEl = ((double)(end - begin + 1)/sortedLabels.n_elem);
+      // std::cout<<"\nRatio of Elements: "<<ratioEl<<"\n";
+      entropy += ratioEl * CalculateEntropy<double, size_t>(
                  sortedAtt.subvec(begin,end),sortedLabels.subvec(begin,end));
       i++;
     }
@@ -183,8 +184,9 @@ double DecisionStump<MatType>::SetupSplitAttribute(
         begin = i - count + 1;
         end = i;
       }
-
-      entropy += CalculateEntropy<double, size_t>(
+      ratioEl = ((double)(end - begin + 1)/sortedLabels.n_elem);
+      // std::cout<<"\nRatio of Elements: "<<ratioEl<<"\n";
+      entropy +=ratioEl * CalculateEntropy<double, size_t>(
                  sortedAtt.subvec(begin,end),sortedLabels.subvec(begin,end));
 
       i = end + 1;
@@ -193,6 +195,7 @@ double DecisionStump<MatType>::SetupSplitAttribute(
     else
       i++;
   }
+  // std::cout<<"Final value of entropy: "<<entropy<<"\n";
   return entropy;
 }
 
@@ -376,41 +379,47 @@ double DecisionStump<MatType>::CalculateEntropy(arma::subview_row<AttType> attri
                                                 arma::subview_row<LabelType> labels)
 {
   double entropy = 0.0;
-
-  arma::rowvec uniqueAtt = arma::unique(attribute);
-  arma::Row<LabelType> uniqueLabel = arma::unique(labels);
-  arma::Row<size_t> numElem(uniqueAtt.n_elem);
+  size_t j;
+  // labels.print("Value of the labels");
+  // arma::rowvec uniqueAtt = arma::unique(attribute);
+  // arma::Row<LabelType> uniqueLabel = arma::unique(labels);
+  arma::Row<size_t> numElem(numClass); //uniqueAtt.n_elem);
   numElem.fill(0);
-  arma::Mat<size_t> entropyArray(uniqueAtt.n_elem,numClass);
-  entropyArray.fill(0);
+  // arma::Mat<size_t> entropyArray(uniqueAtt.n_elem,numClass);
+  // entropyArray.fill(0);
 
   // Populate entropyArray and numElem; they are used as helpers to calculate
   // entropy.
-  for (int j = 0; j < uniqueAtt.n_elem; j++)
+  for (j = 0; j < labels.n_elem; j++)
   {
-    for (int i = 0; i < attribute.n_elem; i++)
+    numElem(labels(j))++;
+    /*for (int i = 0; i < attribute.n_elem; i++)
     {
       if (uniqueAtt[j] == attribute[i])
       {
         entropyArray(j, labels(i))++;
         numElem(j)++;
       }
-    }
+    }*/
   }
-
-  for (int j = 0; j < uniqueAtt.size(); j++)
+  // const double p1 = ((double)labels.n_elem / )
+  // do this when the function call goes back.
+  for (j = 0; j < numClass; j++)
   {
-    const double p1 = ((double) numElem(j) / attribute.n_elem);
-
-    for (int i = 0; i < numClass; i++)
+    // const double p1 = ((double) numElem(j) / attribute.n_elem);
+    const double p1 = ((double) numElem(j) / labels.n_elem);
+    // std::cout<<"Value of p1: "<<p1<<"\n";
+    entropy += (p1 == 0) ? 0 : p1 * log2(p1);
+    // std::cout<<"Value of entropy is : "<<entropy<<std::endl;
+    /*for (int i = 0; i < numClass; i++)
     {
       const double p2 = ((double) entropyArray(j, i) / numElem(j));
       const double p3 = (p2 == 0) ? 0 : p2 * log2(p2);
 
       entropy += p1 * p3;
-    }
+    }*/
   }
-
+  // std::cout<<"Value of entropy for this bucket is : "<<entropy<<std::endl;
   return entropy;
 }
 
