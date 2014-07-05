@@ -235,12 +235,12 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute,
       begin = i - count + 1;
       end = i;
 
-      arma::rowvec zSubCols((sortedLabels.cols(begin, end)).n_elem);
-      zSubCols.fill(0.0);
+      // arma::rowvec zSubCols((sortedLabels.cols(begin, end)).n_elem);
+      // zSubCols.fill(0.0);
 
-      subCols = sortedLabels.cols(begin, end) + zSubCols;
+      // subCols = sortedLabels.cols(begin, end) + zSubCols;
 
-      mostFreq = CountMostFreq<double>(subCols);
+      mostFreq = CountMostFreq<size_t>(sortedLabels.subvec(begin, end));//subCols);
 
       split.resize(split.n_elem + 1);
       split(split.n_elem - 1) = sortedSplitAtt(begin);
@@ -265,14 +265,14 @@ void DecisionStump<MatType>::TrainOnAtt(const arma::rowvec& attribute,
         begin = i - count + 1;
         end = i;
       }
-      arma::rowvec zSubCols((sortedLabels.cols(begin, end)).n_elem);
-      zSubCols.fill(0.0);
+      // arma::rowvec zSubCols((sortedLabels.cols(begin, end)).n_elem);
+      // zSubCols.fill(0.0);
 
-      subCols = sortedLabels.cols(begin, end) + zSubCols;
+      // subCols = sortedLabels.cols(begin, end) + zSubCols;
 
       // Find the most frequent element in subCols so as to assign a label to
       // the bucket of subCols.
-      mostFreq = CountMostFreq<double>(subCols);//sortedLabels.subvec(begin, end));
+      mostFreq = CountMostFreq<size_t>(sortedLabels.subvec(begin, end));//subCols)
 
       split.resize(split.n_elem + 1);
       split(split.n_elem - 1) = sortedSplitAtt(begin);
@@ -313,7 +313,7 @@ void DecisionStump<MatType>::MergeRanges()
 
 template <typename MatType>
 template <typename rType>
-rType DecisionStump<MatType>::CountMostFreq(const arma::Row<rType>& subCols)
+rType DecisionStump<MatType>::CountMostFreq(arma::subview_row<rType> subCols)
 {
   // Sort subCols for easier processing.
   arma::Row<rType> sortCounts = arma::sort(subCols);
@@ -375,7 +375,7 @@ int DecisionStump<MatType>::isDistinct(const arma::Row<rType>& featureRow)
  */
 template<typename MatType>
 template<typename AttType, typename LabelType>
-double DecisionStump<MatType>::CalculateEntropy(arma::subview_row<AttType> attribute,
+double DecisionStump<MatType>::CalculateEntropy(/*arma::subview_row<AttType> attribute,*/
                                                 arma::subview_row<LabelType> labels)
 {
   double entropy = 0.0;
