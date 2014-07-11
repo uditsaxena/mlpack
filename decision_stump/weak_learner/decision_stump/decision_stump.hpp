@@ -16,6 +16,14 @@ namespace decision_stump {
  * This class implements a decision stump. It constructs a single level
  * decision tree, i.e., a decision stump. It uses entropy to decide splitting
  * ranges.
+ *
+ * The stump is parameterized by a splitting attribute (the dimension on which
+ * points are split), a vector of bin split values, and a vector of labels for
+ * each bin.  Bin i is specified by the range [split[i], split[i + 1]).  The
+ * last bin has range up to \infty (split[i + 1] does not exist in that case).
+ * Points that are below the first bin will take the label of the first bin.
+ *
+ * @tparam MatType Type of matrix that is being used (sparse or dense).
  */
 template <typename MatType = arma::mat>
 class DecisionStump
@@ -45,13 +53,27 @@ class DecisionStump
    */
   void Classify(const MatType& test, arma::Row<size_t>& predictedLabels);
 
-  int splitCol;
+  //! Access the splitting attribute.
+  int SplitAttribute() const { return splitAttribute; }
+  //! Modify the splitting attribute (be careful!).
+  int& SplitAttribute() { return splitAttribute; }
+
+  //! Access the splitting values.
+  const arma::vec& Split() const { return split; }
+  //! Modify the splitting values (be careful!).
+  arma::vec& Split() { return split; }
+
+  //! Access the labels for each split bin.
+  const arma::Col<size_t> BinLabels() const { return binLabels; }
+  //! Modify the labels for each split bin (be careful!).
+  arma::Col<size_t>& BinLabels() { return binLabels; }
+
  private:
   //! Stores the number of classes.
   size_t numClass;
 
   //! Stores the value of the attribute on which to split.
-  // int splitCol;
+  int splitAttribute;
 
   //! Size of bucket while determining splitting criterion.
   size_t bucketSize;
@@ -79,7 +101,7 @@ class DecisionStump
    * @param attribute attribute is the attribute decided by the constructor
    *      on which we now train the decision stump.
    */
-  template <typename rType> void TrainOnAtt(/*const arma::rowvec& attribute,*/
+  template <typename rType> void TrainOnAtt(const arma::rowvec& attribute,
                                             const arma::Row<size_t>& labels);
 
   /**
@@ -94,14 +116,14 @@ class DecisionStump
    * @param subCols The vector in which to find the most frequently
    *     occurring element.
    */
-  template <typename rType> rType CountMostFreq(arma::subview_row<rType> subCols);//const arma::Row<rType>& subCols);
+  template <typename rType> rType CountMostFreq(const arma::Row<rType>& subCols);
 
   /**
    * Returns 1 if all the values of featureRow are not same.
    *
    * @param featureRow The attribute which is checked for identical values.
    */
-  template <typename rType> int isDistinct(const arma::Row<rType>& featureRow);
+  template <typename rType> int IsDistinct(const arma::Row<rType>& featureRow);
 
   /**
    * Calculate the entropy of the given attribute.
@@ -110,8 +132,7 @@ class DecisionStump
    * @param labels Corresponding labels of the attribute.
    */
   template <typename AttType, typename LabelType>
-  double CalculateEntropy(arma::subview_row<AttType> attribute,
-                          arma::subview_row<LabelType> labels);
+  double CalculateEntropy(arma::subview_row<LabelType> labels);
 };
 
 }; // namespace decision_stump
