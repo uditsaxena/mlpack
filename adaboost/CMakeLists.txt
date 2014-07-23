@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 2.8)
 # Define the files we need to compile.
 # Anything not in this list will not be compiled into MLPACK.
 set(SOURCES
-  perceptron.hpp
-  perceptron_impl.hpp
+  adaboost.hpp
+  adaboost_impl.hpp
 )
 
 # Add directory name to sources.
@@ -16,14 +16,12 @@ endforeach()
 # the parent scope).
 set(MLPACK_SRCS ${MLPACK_SRCS} ${DIR_SRCS} PARENT_SCOPE)
 
-add_subdirectory(initialization_methods)
-add_subdirectory(learning_policies)
 
-add_executable(perceptron
-  perceptron_main.cpp
+add_executable(adaboost
+  adaboost_main.cpp
 )
-target_link_libraries(perceptron
+target_link_libraries(adaboost
   mlpack
 )
 
-install(TARGETS perceptron RUNTIME DESTINATION bin)
+install(TARGETS adaboost RUNTIME DESTINATION bin)

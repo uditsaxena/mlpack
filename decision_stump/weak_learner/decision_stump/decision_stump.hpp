@@ -52,7 +52,25 @@ class DecisionStump
    *     classifying test data.
    */
   void Classify(const MatType& test, arma::Row<size_t>& predictedLabels);
+  
+  /**
+   *
+   *
+   *
+   *
+   */
+  DecisionStump(const DecisionStump<>& ds);
 
+  /**
+   *
+   *
+   *
+   *
+   *
+   *
+  ModifyData(MatType& data);
+  */
+  
   //! Access the splitting attribute.
   int SplitAttribute() const { return splitAttribute; }
   //! Modify the splitting attribute (be careful!).

@@ -5,8 +5,10 @@
  * Tests for perceptron.
  */
 #include <mlpack/core.hpp>
-#include <mlpack/methods/perceptron/perceptron.hpp>
+#include "main/perceptron.hpp"
 
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE A
 #include <boost/test/unit_test.hpp>
 #include "old_boost_test_definitions.hpp"
 
